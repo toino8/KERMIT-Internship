@@ -1,0 +1,134 @@
+  def translate_content(self, year, country):
+        def translate_sentence(text, source_lang):
+          
+            # Construction du nom du modèle en fonction des langues source et cible
+            model_name = f'Helsinki-NLP/opus-mt-{source_lang}-en'
+            # Initialisation du tokenizer
+            tokenizer = MarianTokenizer.from_pretrained(model_name)
+            # Initialisation du modèle
+            model = MarianMTModel.from_pretrained(model_name)
+
+            # Tokenization
+            inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+            inputs["labels"] = inputs.input_ids.clone()
+
+            try:
+                with torch.no_grad():
+                    outputs = model.generate(**inputs)
+                translated_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)[0]
+                return translated_text
+            
+            except Exception as e:
+                print(f"Translation failed: {e}")
+                return None
+        
+        parent_dir = os.path.dirname(os.getcwd())
+        data_dir = os.path.join(parent_dir, "Data", "RedditData", "RawDatasets")
+        filename = f"reddit_data_{country}_{year}"
+        file_path_for_translation = os.path.join(data_dir, filename + '.csv')
+
+        # Load tweet data based on language
+        if country is not None:
+            reddit_data = self.open_file_country(year, country, False)
+            print(f"Loaded {len(reddit_data)} posts for {country} .")
+        else:
+            reddit_data = self.open_file(year, False)
+
+        # Create a 'content' column combining 'title' and 'body'
+        reddit_data['content'] = reddit_data.apply(
+            lambda row: f"{row['title']} {row['body']}" if pd.notnull(row['title']) and pd.notnull(row['body']) else (
+                row['title'] if pd.notnull(row['title']) else row['body']), axis=1
+        )
+
+        language = self.country_language_map.get(country.lower(), 'en')
+    
+        
+        if language == 'en':
+            print(f"No translation needed for {country} data in {language.upper()}.")
+            reddit_data['content_translated'] = reddit_data['content']
+        else:
+            print(f"Translating {len(reddit_data['content'])} posts from {language.upper()} to English for file {filename}")
+            tqdm.pandas(desc="Translating posts")
+
+            # Ensure the column is created before starting translation
+            reddit_data['content_translated'] = ""
+         
+            # Apply translation
+            try:
+                reddit_data['content_translated'] = reddit_data['content'].progress_apply(
+                    lambda text: translate_sentence(text, language)
+                )
+                print(f"Translated {len(reddit_data['content'])} posts from {language.upper()} to English.")
+            except Exception as e:
+                print(f"Translation failed: {e}")
+                pass
+        # Save the translated content to CSV
+        reddit_data.to_csv(file_path_for_translation, mode='w', index=False, encoding='utf-8')
+        return file_path_for_translation
+
+
+
+    def analyze_sentiment(self, file_path, model_names):
+        reddit_data = pd.read_csv(file_path)
+
+        def analyze_tweet_sentiment(tweet, model_name):
+            tokenizer = AutoTokenizer.from_pretrained(model_name)
+            model = AutoModelForSequenceClassification.from_pretrained(model_name)
+            return self.analyze_sentiment_ai(tweet, tokenizer, model)
+
+        for model_name in model_names:
+            print(f"Analyzing sentiment for {file_path} using model {model_name}...")
+            ai_sentiments = []
+            if reddit_data['content_translated'].str.strip().empty:
+                print('No content to analyze')
+                return
+
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures = {executor.submit(analyze_tweet_sentiment, tweet, model_name): tweet for tweet in reddit_data['content_translated']}
+                for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc=f"Processing with {model_name}"):
+                    sentiment = future.result()
+                    if sentiment is not None:
+                        ai_sentiments.append(sentiment)
+
+            if ai_sentiments:
+                ai_sentiments = pd.Series(ai_sentiments)
+
+                model_id = model_name.split("/")[-1]
+                reddit_data[f'{model_id}_positive_score'] = ai_sentiments.apply(lambda x: x[2])
+                reddit_data[f'{model_id}_negative_score'] = ai_sentiments.apply(lambda x: x[0])
+                reddit_data[f'{model_id}_neutral_score'] = ai_sentiments.apply(lambda x: x[1])
+                reddit_data[f'{model_id}_sentiment'] = ai_sentiments.apply(lambda x: 2 if x[2] == max(x) else (0 if x[0] == max(x) else 1))
+            else:
+                print(f"No sentiments were analyzed for model {model_name}.")
+
+        # Save the analyzed content to CSV
+        analyzed_file_path = file_path.replace('RawDatasets', 'AnalyzedDatasets').replace('.csv', '_analyzed.csv')
+        reddit_data.to_csv(analyzed_file_path, mode='w', index=False, encoding='utf-8')
+        return analyzed_file_path
+
+    def sentiment_analyzing(self, year):
+        parent_dir = os.path.dirname(os.getcwd())
+        data_dir = os.path.join(parent_dir, "Data", "RedditData", "RawDatasets")
+        files = [f for f in os.listdir(data_dir) if f.endswith('.csv') and f"{year}" in f]
+
+        translated_files = []
+        model_names = self.model_names
+       
+        # Step 1: Translate content for each file concurrently
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+       
+            translation_futures = {executor.submit(self.translate_content, year, file.split('_')[2]): file for file in files}
+            for future in concurrent.futures.as_completed(translation_futures):
+                translated_file = future.result()
+                translated_files.append(translated_file)
+
+        # Step 2: Analyze sentiment for each translated file concurrently
+        analyzed_files = []
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            analysis_futures = {executor.submit(self.analyze_sentiment, translated_file, model_names): translated_file for translated_file in translated_files}
+            for future in concurrent.futures.as_completed(analysis_futures):
+                analyzed_file = future.result()
+                analyzed_files.append(analyzed_file)
+
+      
+        return analyzed_files
