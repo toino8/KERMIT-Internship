@@ -28,7 +28,11 @@ This is accomplished by collecting and analyzing large datasets from various onl
 Only if you want to modify the Twitter Webscraping :
 Before running any code, ensure that you have the Chrome WebDriver installed. You can download it from [here](https://storage.googleapis.com/chrome-for-testing-public/125.0.6422.76/win64/chromedriver-win64.zip). Additionally, make sure that Google Chrome is installed on your machine.
 
-For Reddit, while I am not sure that I can provide you the analyzed data to avoid you lacking of time , or if you want to personalize the analysis by specifying different keywords on a theme or a different theme, go on https://academictorrents.com/details/56aa49f9653ba545f48df2e33679f014d2829c10 and download it with a torrent client, then don't forget to specify the subreddit of the country you want , for example type France and select france_sumbissions and france_comments, then you take the two zst files and put it in a folder with the name of the country in Data/RedditData/Torrented/{country}
+For Reddit,
+If you wanna run the code as it is without anylyzing any data or specifying any theme, here is a Wetransfer link with the data pre-analyzed : https://we.tl/t-YhZfu4nTDU.
+The folder you downloaded should be placed in the main directory.
+
+If you want to personalize the analysis by specifying different keywords on a theme or a different theme, go on https://academictorrents.com/details/56aa49f9653ba545f48df2e33679f014d2829c10 and download it with a torrent client, then don't forget to specify the subreddit of the country you want , for example type France and select france_sumbissions and france_comments, then you take the two zst files and put it in a folder with the name of the country in Data/RedditData/Torrented/{country}.
 
 ### Environment Variables
 
@@ -43,7 +47,7 @@ The project consists of two main components: Reddit and Twitter data processing.
 
 #### Reddit Data
 
-Be sure to have the prerequisites for reddit data ( torrents files ) before running the notebook associated with theses files 
+Be sure to have the prerequisites for reddit data ( torrents files ) before running the notebook associated with theses files.
 
 The Reddit data is obtained from academic torrents and is stored in the project repository. Inside the **WebScrapping/Reddit** folder, you will find the following Python scripts:
 
