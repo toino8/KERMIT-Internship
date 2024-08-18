@@ -25,6 +25,9 @@ This is accomplished by collecting and analyzing large datasets from various onl
 
 ### Prerequisites
 
+Firstly, you need to run pip install -r requirements.txt at the root of the project folder to install all python libraries.
+
+
 Only if you want to modify the Twitter Webscraping :
 Before running any code, ensure that you have the Chrome WebDriver installed. You can download it from [here](https://storage.googleapis.com/chrome-for-testing-public/125.0.6422.76/win64/chromedriver-win64.zip). Additionally, make sure that Google Chrome is installed on your machine.
 
