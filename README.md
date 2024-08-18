@@ -1,11 +1,14 @@
 # FootSafetyEngagement
 
-**Public Engagement in Food Safety Events in the Context of Climate Change**  
+
+**Public Engagement in Environmental Issues: First focus on Climate Change and Microplastics**
+
 *Leveraging Artificial Intelligence for Big Data Analysis to Gauge Consumer Sentiment*
 
 ## Overview
 
-The FootSafetyEngagement project focuses on analyzing public engagement and consumer sentiment regarding food safety in the context of climate change. This is achieved through the collection and analysis of vast amounts of data from various online platforms, using Natural Language Processing (NLP) and machine learning techniques to derive meaningful insights.
+The PublicEngagementEnvironment project focuses on analyzing public engagement and consumer sentiment related to environmental themes such as climate change and microplastics.
+This is accomplished by collecting and analyzing large datasets from various online platforms, utilizing Natural Language Processing (NLP) and machine learning techniques to extract meaningful insights.
 
 ### Project Workflow
 
