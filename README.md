@@ -29,7 +29,7 @@ Firstly, you need to run pip install -r requirements.txt at the root of the proj
 
 
 Only if you want to modify the Twitter Webscraping :
-Before running any code, ensure that you have the Chrome WebDriver installed. You can download it from [here](https://storage.googleapis.com/chrome-for-testing-public/125.0.6422.76/win64/chromedriver-win64.zip). Additionally, make sure that Google Chrome is installed on your machine.
+Before running any code, ensure that you have the Chrome WebDriver installed. You can download it from [here](https://drive.google.com/drive/folders/1Fv-eiVYvVPYkvHq9PTq3iRoCfguHUpKw?usp=drive_link). Additionally, make sure that Google Chrome is installed on your machine.
 
 For Reddit,
 If you wanna run the code as it is without anylyzing any data or specifying any theme, here is a Wetransfer link with the data pre-analyzed : https://we.tl/t-YhZfu4nTDU.
